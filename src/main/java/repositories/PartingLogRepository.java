@@ -1,6 +1,7 @@
 package repositories;
 
 import entities.PartingLot;
+import entities.SingleLot;
 import utils.JDBCUtil;
 import utils.SqlUtil;
 
@@ -38,4 +39,29 @@ public class PartingLogRepository {
             e.printStackTrace();
         }
     }
+
+    public String findPartInfo(String carNumber) {
+        String[] lotNameArr = {"A", "B"};
+        String sql;
+        try {
+            SingleLot lot;
+            for (String name : lotNameArr) {
+                sql = "SELECT id FROM " + name + " WHERE car_number IS NULL LIMIT 1";
+                Connection conn = JDBCUtil.connectToDB();
+                lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class);
+                if (null != lot) {
+                    lot.setCarNumber(carNumber);
+                    conn = JDBCUtil.connectToDB();
+                    sql = "UPDATE " + name + " SET car_number = ? WHERE id = ?";
+                    SqlUtil.executeUpdate(conn, sql, carNumber, lot.getLotId());
+                    return name + "," + lot;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+
 }

@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class Application {
 
     private static PartingLogRepository lotRepository = new PartingLogRepository();
+    private static final String WRONG_INPUT = "格式错误，请重新输入！";
 
     public static void main(String[] args) {
         operateParking();
@@ -37,8 +38,12 @@ public class Application {
             System.out.println("请输入车牌号\n格式为\"车牌号\" 如: \"A12098\"：");
             String carInfo = scanner.next();
             String ticket = park(carInfo);
-            String[] ticketDetails = ticket.split(",");
-            System.out.format("已将您的车牌号为%s的车辆停到%s停车场%s号车位，停车券为：%s，请您妥善保存。\n", ticketDetails[2], ticketDetails[0], ticketDetails[1], ticket);
+            if (ticket.equals("")) {
+                System.out.println("非常抱歉，由于车位已满，暂时无法为您停车！");
+            } else {
+                String[] ticketDetails = ticket.split(",");
+                System.out.format("已将您的车牌号为%s的车辆停到%s停车场%s号车位，停车券为：%s，请您妥善保存。\n", ticketDetails[2], ticketDetails[0], ticketDetails[1], ticket);
+            }
         }
         else if (choice.equals("3")) {
             System.out.println("请输入停车券信息\n格式为\"停车场编号1,车位编号,车牌号\" 如 \"A,1,8\"：");
@@ -51,7 +56,7 @@ public class Application {
     public static void init(String initInfo) {
         String[] lots = initInfo.split(",");
         if (lots.length != 2 || !lots[0].startsWith("A:") || !lots[1].startsWith("B:")) {
-            System.out.println("格式错误，请重新输入!");
+            System.out.println(WRONG_INPUT);
             handle("1");
         } else {
             List<PartingLot> lotList = new ArrayList<>();
@@ -65,6 +70,12 @@ public class Application {
     }
 
     public static String park(String carNumber) {
+        if (carNumber.matches("^[A-Z][A-Z0-9]{5}$")) {
+            return lotRepository.findPartInfo(carNumber);
+        } else {
+            System.out.println(WRONG_INPUT);
+            handle("2");
+        }
         return "";
     }
 

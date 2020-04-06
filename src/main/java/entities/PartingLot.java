@@ -1,7 +1,5 @@
 package entities;
 
-import utils.ColumnName;
-
 public class PartingLot {
 
     private String lotName;
