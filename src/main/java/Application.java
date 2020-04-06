@@ -1,4 +1,5 @@
 import entities.PartingLot;
+import exception.ParkingLotFullException;
 import repositories.PartingLogRepository;
 
 import java.util.ArrayList;
@@ -38,11 +39,15 @@ public class Application {
             System.out.println("请输入车牌号\n格式为\"车牌号\" 如: \"A12098\"：");
             String carInfo = scanner.next();
             String ticket = park(carInfo);
-            if (ticket.equals("")) {
-                System.out.println("非常抱歉，由于车位已满，暂时无法为您停车！");
-            } else {
-                String[] ticketDetails = ticket.split(",");
-                System.out.format("已将您的车牌号为%s的车辆停到%s停车场%s号车位，停车券为：%s，请您妥善保存。\n", ticketDetails[2], ticketDetails[0], ticketDetails[1], ticket);
+            try {
+                if (ticket.equals("")) {
+                    throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
+                } else {
+                    String[] ticketDetails = ticket.split(",");
+                    System.out.format("已将您的车牌号为%s的车辆停到%s停车场%s号车位，停车券为：%s，请您妥善保存。\n", ticketDetails[2], ticketDetails[0], ticketDetails[1], ticket);
+                }
+            } catch (ParkingLotFullException e) {
+                System.out.println(e.getMessage());
             }
         }
         else if (choice.equals("3")) {
