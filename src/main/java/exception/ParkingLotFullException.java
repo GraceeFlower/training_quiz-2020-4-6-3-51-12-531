@@ -9,4 +9,7 @@ public class ParkingLotFullException extends RuntimeException {
         super(message);
     }
 
+    public ParkingLotFullException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

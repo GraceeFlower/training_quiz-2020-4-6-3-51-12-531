@@ -63,5 +63,21 @@ public class PartingLogRepository {
         return "";
     }
 
-
+    public String checkTicket(String[] ticketInfo) {
+        try {
+            Connection conn = JDBCUtil.connectToDB();
+            SingleLot lot;
+            String sql = "SELECT car_number FROM " + ticketInfo[0] + " WHERE id = ? AND car_number = ?";
+            lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class, ticketInfo[1], ticketInfo[2]);
+            if (lot != null) {
+                conn = JDBCUtil.connectToDB();
+                sql = "UPDATE " + ticketInfo[0] + " SET car_number = NULL WHERE id = ?";
+                SqlUtil.executeUpdate(conn, sql, ticketInfo[1]);
+                return lot.getCarNumber();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 }
