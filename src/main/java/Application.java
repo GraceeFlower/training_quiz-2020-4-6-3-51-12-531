@@ -1,6 +1,13 @@
+import entities.PartingLot;
+import repositories.PartingLogRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Application {
+
+  private static PartingLogRepository lotRepository = new PartingLogRepository();
 
   public static void main(String[] args) {
     operateParking();
@@ -42,7 +49,19 @@ public class Application {
   }
 
   public static void init(String initInfo) {
-
+    String[] lots = initInfo.split(",");
+    if (lots.length != 2 || !lots[0].startsWith("A:") || !lots[1].startsWith("B:")) {
+      System.out.println("格式错误，请重新输入!");
+      handle("1");
+    } else {
+      List<PartingLot> lotList = new ArrayList<>();
+      for (String l : lots) {
+        String[] lotInfo = l.split(":");
+        PartingLot lot = new PartingLot(lotInfo[0], Integer.parseInt(lotInfo[1]));
+        lotList.add(lot);
+      }
+      lotRepository.initPartingLot(lotList);
+    }
   }
 
   public static String park(String carNumber) {
