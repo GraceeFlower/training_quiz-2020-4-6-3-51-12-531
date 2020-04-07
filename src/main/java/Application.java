@@ -1,15 +1,13 @@
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
 import exception.WrongFormatException;
-import repositories.ParkingLogRepository;
+import services.LotService;
 
 import java.util.*;
 
 public class Application {
 
-    private static ParkingLogRepository lotRepository = new ParkingLogRepository();
-    private static Map<String, Integer> lotList = new LinkedHashMap<>();
-    private static final String WRONG_INPUT = "格式错误！";
+    private static LotService lotRepository = new LotService();
 
     public static void main(String[] args) {
         operateParking();
@@ -65,41 +63,15 @@ public class Application {
     public static void init(String initInfo) throws WrongFormatException {
         String[] lots = initInfo.split(",");
         Arrays.sort(lots);
-        if (lots.length != 2 || !lots[0].startsWith("A:") || !lots[1].startsWith("B:")) {
-            throw new WrongFormatException(WRONG_INPUT);
-        } else {
-            for (String l : lots) {
-                String[] lotInfo = l.split(":");
-                lotList.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
-            }
-            lotRepository.initParkingLot(lotList);
-        }
+        lotRepository.initParkingLot(lots);
     }
 
     public static String park(String carNumber) throws ParkingLotFullException, WrongFormatException {
-        String ticket;
-        if (carNumber.matches("^[A-Z][A-Z0-9]{5}$")) {
-            ticket = lotRepository.findParkInfo(lotList, carNumber);
-            if (ticket.equals("")) {
-                throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
-            }
-        } else {
-            throw new WrongFormatException(WRONG_INPUT);
-        }
-        return ticket;
+        return lotRepository.findEmptyParking(carNumber);
     }
 
     public static String fetch(String ticket) throws InvalidTicketException, WrongFormatException {
-        String carNumber;
         String[] ticketInfo = ticket.split(",");
-        if (3 == ticketInfo.length) {
-            carNumber = lotRepository.checkTicket(lotList, ticketInfo);
-            if (carNumber.equals("")) {
-                throw new InvalidTicketException("停车券无效");
-            }
-        } else {
-            throw new WrongFormatException(WRONG_INPUT);
-        }
-        return carNumber;
+        return lotRepository.checkTicket(ticketInfo);
     }
 }

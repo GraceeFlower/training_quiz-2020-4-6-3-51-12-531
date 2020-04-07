@@ -1,6 +1,5 @@
 package repositories;
 
-import entities.ParkingLot;
 import entities.SingleLot;
 import utils.JDBCUtil;
 import utils.SqlUtil;
@@ -8,9 +7,10 @@ import utils.SqlUtil;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class SingleLotRepository {
+public class LotRepository implements LotRepositoryI {
 
-    public void initSingle(String lotName, Integer lotNumber) {
+    @Override
+    public void initParkingLot(String lotName, Integer lotNumber) {
         SqlUtil.refreshTable(lotName);
         try {
             Connection conn;
@@ -24,6 +24,7 @@ public class SingleLotRepository {
         }
     }
 
+    @Override
     public SingleLot findEmptyParking(String lotName, String carNumber) {
         SingleLot lot = null;
         String sql = "SELECT id FROM " + lotName + " WHERE car_number IS NULL LIMIT 1";
@@ -42,6 +43,7 @@ public class SingleLotRepository {
         return lot;
     }
 
+    @Override
     public String checkTicket(String[] ticketInfo) {
         try {
             Connection conn = JDBCUtil.connectToDB();
