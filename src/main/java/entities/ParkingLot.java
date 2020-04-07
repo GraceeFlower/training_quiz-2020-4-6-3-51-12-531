@@ -1,14 +1,18 @@
 package entities;
 
-public class PartingLot {
+import utils.ColumnName;
 
+public class ParkingLot {
+
+    @ColumnName("lname")
     private String lotName;
+    @ColumnName("part_total")
     private int parkingNumber;
 
-    public PartingLot() {
+    public ParkingLot() {
     }
 
-    public PartingLot(String lotName, int parkingNumber) {
+    public ParkingLot(String lotName, int parkingNumber) {
         this.lotName = lotName;
         this.parkingNumber = parkingNumber;
     }

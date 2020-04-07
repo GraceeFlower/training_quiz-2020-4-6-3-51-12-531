@@ -84,4 +84,13 @@ public class SqlUtil {
         }
         return fieldList;
     }
+
+    public static void refreshTable(String tableName) {
+        try {
+            Connection conn = JDBCUtil.connectToDB();
+            SqlUtil.executeUpdate(conn, "TRUNCATE TABLE " + tableName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

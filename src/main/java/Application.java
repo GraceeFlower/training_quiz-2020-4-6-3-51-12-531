@@ -1,17 +1,15 @@
-import entities.PartingLot;
-
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
 import exception.WrongFormatException;
-import repositories.PartingLogRepository;
+import repositories.ParkingLogRepository;
 
 import java.util.*;
 
 public class Application {
 
-    private static PartingLogRepository lotRepository = new PartingLogRepository();
+    private static ParkingLogRepository lotRepository = new ParkingLogRepository();
+    private static Map<String, Integer> lotList = new LinkedHashMap<>();
     private static final String WRONG_INPUT = "格式错误！";
-    private static Map<String, Integer> init = new HashMap<>();
 
     public static void main(String[] args) {
         operateParking();
@@ -66,24 +64,22 @@ public class Application {
 
     public static void init(String initInfo) throws WrongFormatException {
         String[] lots = initInfo.split(",");
+        Arrays.sort(lots);
         if (lots.length != 2 || !lots[0].startsWith("A:") || !lots[1].startsWith("B:")) {
             throw new WrongFormatException(WRONG_INPUT);
         } else {
-            List<PartingLot> lotList = new ArrayList<>();
             for (String l : lots) {
                 String[] lotInfo = l.split(":");
-                PartingLot lot = new PartingLot(lotInfo[0], Integer.parseInt(lotInfo[1]));
-                init.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
-                lotList.add(lot);
+                lotList.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
             }
-            lotRepository.initPartingLot(lotList);
+            lotRepository.initParkingLot(lotList);
         }
     }
 
     public static String park(String carNumber) throws ParkingLotFullException, WrongFormatException {
-        String ticket = "";
+        String ticket;
         if (carNumber.matches("^[A-Z][A-Z0-9]{5}$")) {
-            ticket = lotRepository.findPartInfo(carNumber);
+            ticket = lotRepository.findParkInfo(lotList, carNumber);
             if (ticket.equals("")) {
                 throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
             }
@@ -97,14 +93,8 @@ public class Application {
         String carNumber;
         String[] ticketInfo = ticket.split(",");
         if (3 == ticketInfo.length) {
-            int lotNum = Integer.parseInt(ticketInfo[1]);
-            if ((ticket.startsWith("A,") || ticket.startsWith("B,"))
-                && (lotNum > 0 && lotNum <= init.get(ticketInfo[0]))) {
-                carNumber = lotRepository.checkTicket(ticketInfo);
-                if (carNumber.equals("")) {
-                    throw new InvalidTicketException("很抱歉，无法通过您提供的停车券为您找到相应的车辆，请您再次核对停车券是否有效！");
-                }
-            } else {
+            carNumber = lotRepository.checkTicket(lotList, ticketInfo);
+            if (carNumber.equals("")) {
                 throw new InvalidTicketException("停车券无效");
             }
         } else {
