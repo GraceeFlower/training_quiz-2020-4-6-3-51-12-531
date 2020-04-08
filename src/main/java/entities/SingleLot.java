@@ -54,4 +54,9 @@ public class SingleLot {
     public void setCarId(int carId) {
         this.carId = carId;
     }
+
+    @Override
+    public String toString() {
+        return lotName + "," + lotNumber;
+    }
 }

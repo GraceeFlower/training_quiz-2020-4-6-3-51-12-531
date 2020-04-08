@@ -37,7 +37,7 @@ public class LotService implements LotServiceI {
         for (String key: lotList.keySet()) {
             SingleLot checkedLot = lotRepository.findEmptyParking(key, car.getId());
             if (null != checkedLot) {
-                ticket = checkedLot.getLotName() + "," + checkedLot.getLotNumber() + "," + car.getCarNumber();
+                ticket = checkedLot + "," + car.getCarNumber();
                 break;
             }
         }
