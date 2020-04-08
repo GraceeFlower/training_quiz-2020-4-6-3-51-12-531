@@ -1,18 +1,14 @@
--- create the detail table of "A" lot
-CREATE TABLE `A` (
-    `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `car_id` INT DEFAULT NULL,
-) ENGINE=INNODB DEFAULT CHARSET=utf8;
-
--- create the detail table of "B" lot
-CREATE TABLE `B` (
-    `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `car_id` INT DEFAULT NULL,
+-- create the table of lots
+CREATE TABLE `lot_list` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT,
+    `lot_name` CHAR(1) NOT NULL,
+    `lot_no` INT NOT NULL,
+    `car_id` INT DEFAULT 0
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 -- create the detail table of car
 CREATE TABLE `car_info` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
     `car_number` CHAR(6) NOT NULL,
-    `state` VARCHAR(5) DEFAULT 'enter',
+    `state` VARCHAR(5) DEFAULT 'enter'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;

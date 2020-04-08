@@ -1,13 +1,17 @@
+import entities.CarDetail;
+import exception.CarExistingException;
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
 import exception.WrongFormatException;
+import services.CarService;
 import services.LotService;
 
 import java.util.*;
 
 public class Application {
 
-    private static LotService lotRepository = new LotService();
+    private static LotService lotService = new LotService();
+    private static CarService carService = new CarService();
 
     public static void main(String[] args) {
         operateParking();
@@ -44,7 +48,7 @@ public class Application {
                 String ticket = park(carInfo);
                 String[] ticketDetails = ticket.split(",");
                 System.out.format("已将您的车牌号为%s的车辆停到%s停车场%s号车位，停车券为：%s，请您妥善保存。\n", ticketDetails[2], ticketDetails[0], ticketDetails[1], ticket);
-            } catch (ParkingLotFullException | WrongFormatException e) {
+            } catch (ParkingLotFullException | WrongFormatException | CarExistingException e) {
                 System.out.println(e.getMessage());
             }
         }
@@ -63,15 +67,21 @@ public class Application {
     public static void init(String initInfo) throws WrongFormatException {
         String[] lots = initInfo.split(",");
         Arrays.sort(lots);
-        lotRepository.initParkingLot(lots);
+        lotService.initParkingLot(lots);
+        carService.initCarDetail();
     }
 
-    public static String park(String carNumber) throws ParkingLotFullException, WrongFormatException {
-        return lotRepository.findEmptyParking(carNumber);
+    public static String park(String carNumber) throws ParkingLotFullException, WrongFormatException, CarExistingException {
+        CarDetail car = carService.getCarDetail(carNumber);
+        return lotService.findEmptyParking(car);
     }
 
     public static String fetch(String ticket) throws InvalidTicketException, WrongFormatException {
         String[] ticketInfo = ticket.split(",");
-        return lotRepository.checkTicket(ticketInfo);
+        int carId = lotService.getCarId(ticketInfo);
+        String carNumber = carService.getCarNumber(carId);
+        lotService.removeCar(carNumber, ticketInfo);
+        return carNumber;
     }
+
 }

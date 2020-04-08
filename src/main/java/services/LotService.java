@@ -1,5 +1,6 @@
 package services;
 
+import entities.CarDetail;
 import entities.SingleLot;
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
@@ -17,53 +18,58 @@ public class LotService implements LotServiceI {
 
     @Override
     public void initParkingLot(String[] lots) {
-        if (lots.length != 2 || !lots[0].startsWith("A:") || !lots[1].startsWith("B:")) {
-            throw new WrongFormatException(WRONG_INPUT);
-        } else {
-            for (String l : lots) {
-                String[] lotInfo = l.split(":");
-                lotList.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
+        for (String l : lots) {
+            String[] lotInfo = l.split(":");
+            if (2 != lotInfo.length) {
+                throw new WrongFormatException(WRONG_INPUT);
             }
+            lotList.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
         }
+        lotRepository.refreshTable();
         for (Map.Entry<String, Integer> entry : lotList.entrySet()) {
             lotRepository.initParkingLot(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public String findEmptyParking(String carNumber) {
+    public String findEmptyParking(CarDetail car) {
         String ticket = "";
-        if (carNumber.matches("^[A-Z][A-Z0-9]{5}$")) {
-            for (String key: lotList.keySet()) {
-                SingleLot checkedLot = lotRepository.findEmptyParking(key, carNumber);
-                if (null != checkedLot) {
-                    ticket = key + "," + checkedLot;
-                    break;
-                }
+        for (String key: lotList.keySet()) {
+            SingleLot checkedLot = lotRepository.findEmptyParking(key, car.getId());
+            if (null != checkedLot) {
+                ticket = checkedLot.getLotName() + "," + checkedLot.getLotNumber() + "," + car.getCarNumber();
+                break;
             }
-            if (ticket.equals("")) {
-                throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
-            }
-        } else {
-            throw new WrongFormatException(WRONG_INPUT);
+        }
+        if (ticket.equals("")) {
+            throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
         }
         return ticket;
     }
 
     @Override
-    public String checkTicket(String[] ticketInfo) {
-        String carNumber = "";
-        if (3 == ticketInfo.length) {
+    public int getCarId(String[] ticketInfo) {
+        int carId;
+        if (3 == ticketInfo.length && ticketInfo[2].matches("^[A-Z][A-Z0-9]{5}$")) {
             int total = Integer.parseInt(ticketInfo[1]);
-            if (lotList.containsKey(ticketInfo[0]) && total > 0 && total < lotList.get(ticketInfo[0])) {
-                carNumber = lotRepository.checkTicket(ticketInfo);
-                if (carNumber.equals("")) {
-                    throw new InvalidTicketException("停车券无效");
-                }
-            }else {
-                throw new WrongFormatException(WRONG_INPUT);
+            if (lotList.containsKey(ticketInfo[0])
+                && total > 0 && total <= lotList.get(ticketInfo[0])) {
+                carId = lotRepository.getCarId(ticketInfo);
+            } else {
+                throw new InvalidTicketException("停车票无效");
             }
+        } else {
+            throw new WrongFormatException(WRONG_INPUT);
         }
-        return carNumber;
+        return carId;
+    }
+
+    @Override
+    public void removeCar(String carNumber, String[] ticketInfo) {
+        if (carNumber.equals(ticketInfo[2])) {
+            lotRepository.removeCar(ticketInfo);
+        } else {
+            throw new InvalidTicketException("停车票无效");
+        }
     }
 }

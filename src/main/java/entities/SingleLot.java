@@ -6,15 +6,21 @@ public class SingleLot {
 
     @ColumnName("id")
     private int lotId;
-    @ColumnName("car_number")
-    private String carNumber;
+    @ColumnName("lot_name")
+    private String lotName;
+    @ColumnName("lot_no")
+    private int lotNumber;
+    @ColumnName("car_id")
+    private int carId;
 
     public SingleLot() {
     }
 
-    public SingleLot(int lotId, String carNumber) {
+    public SingleLot(int lotId, String lotName, int lotNumber, int carId) {
         this.lotId = lotId;
-        this.carNumber = carNumber;
+        this.lotName = lotName;
+        this.lotNumber = lotNumber;
+        this.carId = carId;
     }
 
     public int getLotId() {
@@ -25,16 +31,27 @@ public class SingleLot {
         this.lotId = lotId;
     }
 
-    public String getCarNumber() {
-        return carNumber;
+    public String getLotName() {
+        return lotName;
     }
 
-    public void setCarNumber(String carNumber) {
-        this.carNumber = carNumber;
+    public void setLotName(String lotName) {
+        this.lotName = lotName;
     }
 
-    @Override
-    public String toString() {
-        return lotId + "," + carNumber;
+    public int getLotNumber() {
+        return lotNumber;
+    }
+
+    public void setLotNumber(int lotNumber) {
+        this.lotNumber = lotNumber;
+    }
+
+    public int getCarId() {
+        return carId;
+    }
+
+    public void setCarId(int carId) {
+        this.carId = carId;
     }
 }

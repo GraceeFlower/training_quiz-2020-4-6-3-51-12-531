@@ -9,15 +9,21 @@ import java.sql.SQLException;
 
 public class LotRepository implements LotRepositoryI {
 
+    private static final String TABLE_NAME = "lot_list";
+
+    @Override
+    public void refreshTable() {
+        SqlUtil.refreshTable(TABLE_NAME);
+    }
+
     @Override
     public void initParkingLot(String lotName, Integer lotNumber) {
-        SqlUtil.refreshTable(lotName);
         try {
             Connection conn;
-            String sql = "INSERT INTO " + lotName + " VALUES ()";
+            String sql = "INSERT INTO " + TABLE_NAME + " (lot_name, lot_no) VALUES (?, ?)";
             for (int i = 0; i < lotNumber; i++) {
                 conn = JDBCUtil.connectToDB();
-                SqlUtil.executeUpdate(conn, sql);
+                SqlUtil.executeUpdate(conn, sql, lotName, i + 1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -25,17 +31,17 @@ public class LotRepository implements LotRepositoryI {
     }
 
     @Override
-    public SingleLot findEmptyParking(String lotName, String carNumber) {
+    public SingleLot findEmptyParking(String lotName, int carId) {
         SingleLot lot = null;
-        String sql = "SELECT id FROM " + lotName + " WHERE car_number IS NULL LIMIT 1";
+        String sql = "SELECT id, lot_name, lot_no FROM " + TABLE_NAME + " WHERE car_id = 0 LIMIT 1";
         try {
             Connection conn = JDBCUtil.connectToDB();
             lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class);
             if (null != lot) {
-                lot.setCarNumber(carNumber);
+                lot.setCarId(carId);
                 conn = JDBCUtil.connectToDB();
-                sql = "UPDATE " + lotName + " SET car_number = ? WHERE id = ?";
-                SqlUtil.executeUpdate(conn, sql, carNumber, lot.getLotId());
+                sql = "UPDATE " + TABLE_NAME + " SET car_id = ? WHERE id = ?";
+                SqlUtil.executeUpdate(conn, sql, carId, lot.getLotId());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,21 +50,30 @@ public class LotRepository implements LotRepositoryI {
     }
 
     @Override
-    public String checkTicket(String[] ticketInfo) {
+    public int getCarId(String[] ticketInfo) {
+        int carId = 0;
         try {
             Connection conn = JDBCUtil.connectToDB();
             SingleLot lot;
-            String sql = "SELECT car_number FROM " + ticketInfo[0] + " WHERE id = ? AND car_number = ?";
-            lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class, ticketInfo[1], ticketInfo[2]);
+            String sql = "SELECT car_id FROM " + TABLE_NAME + " WHERE lot_name = ? AND lot_no = ?";
+            lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class, ticketInfo[0], ticketInfo[1]);
             if (lot != null) {
-                conn = JDBCUtil.connectToDB();
-                sql = "UPDATE " + ticketInfo[0] + " SET car_number = NULL WHERE id = ?";
-                SqlUtil.executeUpdate(conn, sql, ticketInfo[1]);
-                return lot.getCarNumber();
+                carId = lot.getCarId();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "";
+        return carId;
+    }
+
+    @Override
+    public void removeCar(String[] ticketInfo) {
+        String sql = "UPDATE " + TABLE_NAME + " SET car_id = 0 WHERE lot_name = ? AND lot_no = ?";
+        try {
+            Connection conn = JDBCUtil.connectToDB();
+            SqlUtil.executeUpdate(conn, sql, ticketInfo[0], ticketInfo[1]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
