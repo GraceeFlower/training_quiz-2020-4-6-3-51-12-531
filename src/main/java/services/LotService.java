@@ -6,6 +6,7 @@ import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
 import exception.WrongFormatException;
 import repositories.LotRepository;
+import staticRes.StaticInfo;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,14 +15,13 @@ public class LotService implements LotServiceI {
 
     private static LotRepository lotRepository = new LotRepository();
     private static Map<String, Integer> lotList = new LinkedHashMap<>();
-    private static final String WRONG_INPUT = "格式错误！";
 
     @Override
     public void initParkingLot(String[] lots) {
         for (String l : lots) {
             String[] lotInfo = l.split(":");
             if (2 != lotInfo.length) {
-                throw new WrongFormatException(WRONG_INPUT);
+                throw new WrongFormatException(StaticInfo.WRONG_INPUT);
             }
             lotList.put(lotInfo[0], Integer.parseInt(lotInfo[1]));
         }
@@ -42,7 +42,7 @@ public class LotService implements LotServiceI {
             }
         }
         if (ticket.equals("")) {
-            throw new ParkingLotFullException("非常抱歉，由于车位已满，暂时无法为您停车！");
+            throw new ParkingLotFullException(StaticInfo.LOT_FULL);
         }
         return ticket;
     }
@@ -56,10 +56,10 @@ public class LotService implements LotServiceI {
                 && total > 0 && total <= lotList.get(ticketInfo[0])) {
                 carId = lotRepository.getCarId(ticketInfo);
             } else {
-                throw new InvalidTicketException("停车票无效");
+                throw new InvalidTicketException(StaticInfo.INVALID_TICKET);
             }
         } else {
-            throw new WrongFormatException(WRONG_INPUT);
+            throw new WrongFormatException(StaticInfo.WRONG_INPUT);
         }
         return carId;
     }
@@ -69,7 +69,7 @@ public class LotService implements LotServiceI {
         if (carNumber.equals(ticketInfo[2])) {
             lotRepository.removeCar(ticketInfo);
         } else {
-            throw new InvalidTicketException("停车票无效");
+            throw new InvalidTicketException(StaticInfo.INVALID_TICKET);
         }
     }
 }
