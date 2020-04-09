@@ -1,3 +1,9 @@
+-- create database
+CREATE DATABASE `parking_sys` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
+-- use this database
+USE `parking_sys`;
+
 -- create the table of lots
 CREATE TABLE `lot_list` (
     `id` INT PRIMARY KEY AUTO_INCREMENT,
