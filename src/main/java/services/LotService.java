@@ -1,7 +1,6 @@
 package services;
 
-import entities.CarDetail;
-import entities.SingleLot;
+import entities.*;
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
 import exception.WrongFormatException;
@@ -10,11 +9,12 @@ import staticRes.StaticInfo;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class LotService implements LotServiceI {
 
     private static LotRepository lotRepository = new LotRepository();
-    private static Map<String, Integer> lotList = new LinkedHashMap<>();
+    public static Map<String, Integer> lotList = new LinkedHashMap<>();
 
     @Override
     public void initParkingLot(String[] lots) {
@@ -33,18 +33,22 @@ public class LotService implements LotServiceI {
 
     @Override
     public String findEmptyParking(CarDetail car) {
-        String ticket = "";
-        for (String key: lotList.keySet()) {
-            SingleLot checkedLot = lotRepository.findEmptyParking(key, car.getId());
-            if (null != checkedLot) {
-                ticket = checkedLot + "," + car.getCarNumber();
-                break;
-            }
+        Random random = new Random();
+        int type = random.nextInt(2);
+        ParkingAttendant attendant = new SillyMember();
+        if (1 == type) {
+            attendant = new SmartMember();
         }
-        if (ticket.equals("")) {
+        SingleLot checkedLot = attendant.provideTicket(car, lotRepository);
+        lotRepository.updateParking(checkedLot.getLotId(), car.getId());
+        return checkedLot + "," + car.getCarNumber();
+    }
+
+    @Override
+    public void hasEmptyParking() {
+        if (null == lotRepository.hasEmptyParking()) {
             throw new ParkingLotFullException(StaticInfo.LOT_FULL);
         }
-        return ticket;
     }
 
     @Override

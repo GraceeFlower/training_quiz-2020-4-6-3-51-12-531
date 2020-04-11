@@ -1,4 +1,5 @@
 import entities.CarDetail;
+import entities.ParkingAttendant;
 import exception.CarExistingException;
 import exception.InvalidTicketException;
 import exception.ParkingLotFullException;
@@ -57,7 +58,8 @@ public class Application {
             String ticket = scanner.next();
             try {
                 String car = fetch(ticket);
-                System.out.format("已为您取到车牌号为%s的车辆，很高兴为您服务，祝您生活愉快!\n", car);
+                int[] info = ParkingAttendant.calculateParkingCharge();
+                System.out.format("已为您取到车牌号为%s的车辆，您的停车时间为%d小时，停车费用为%d元，很高兴为您服务，祝您生活愉快!\n", car, info[0], info[1]);
             } catch (InvalidTicketException | WrongFormatException e) {
                 System.out.println(e.getMessage());
             }
@@ -72,6 +74,7 @@ public class Application {
     }
 
     public static String park(String carNumber) throws ParkingLotFullException, WrongFormatException, CarExistingException {
+        lotService.hasEmptyParking();
         CarDetail car = carService.getCarDetail(carNumber);
         return lotService.findEmptyParking(car);
     }

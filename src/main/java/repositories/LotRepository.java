@@ -5,8 +5,7 @@ import staticRes.StaticInfo;
 import utils.JDBCUtil;
 import utils.SqlUtil;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class LotRepository implements LotRepositoryI {
 
@@ -30,18 +29,36 @@ public class LotRepository implements LotRepositoryI {
     }
 
     @Override
-    public SingleLot findEmptyParking(String lotName, int carId) {
+    public SingleLot findEmptyParking(String lotName) {
         SingleLot lot = null;
-        String sql = "SELECT id, lot_name, lot_no FROM " + StaticInfo.LOT_TABLE + " WHERE car_id = 0 LIMIT 1";
+        String sql = "SELECT id, lot_name, lot_no FROM " + StaticInfo.LOT_TABLE + " WHERE lot_name = ? AND car_id = 0 LIMIT 1";
+        try {
+            Connection conn = JDBCUtil.connectToDB();
+            lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class, lotName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lot;
+    }
+
+    @Override
+    public void updateParking(int lotId, int carId) {
+        try {
+            Connection conn = JDBCUtil.connectToDB();
+            String sql = "UPDATE " + StaticInfo.LOT_TABLE + " SET car_id = ? WHERE id = ?";
+            SqlUtil.executeUpdate(conn, sql, carId, lotId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public SingleLot hasEmptyParking() {
+        String sql = "SELECT id FROM " + StaticInfo.LOT_TABLE + " WHERE car_id = 0 LIMIT 1";
+        SingleLot lot = null;
         try {
             Connection conn = JDBCUtil.connectToDB();
             lot = SqlUtil.executeQuerySingle(conn, sql, SingleLot.class);
-            if (null != lot) {
-                lot.setCarId(carId);
-                conn = JDBCUtil.connectToDB();
-                sql = "UPDATE " + StaticInfo.LOT_TABLE + " SET car_id = ? WHERE id = ?";
-                SqlUtil.executeUpdate(conn, sql, carId, lot.getLotId());
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -75,4 +92,5 @@ public class LotRepository implements LotRepositoryI {
             e.printStackTrace();
         }
     }
+
 }
